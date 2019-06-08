@@ -30,6 +30,9 @@ class HinagikuClient(discord.Client):
         # UD機能
         if '下' in message.content or 'した' in message.content or 'sita' in message.content.lower():
             await self.target_channel.send('UD!')
+        
+        if message.content.lower() == 'yukitterの真似して':
+            await self.target_channel.send('' ,file=discord.File('./Resource/gone.jpg'))
 
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)
