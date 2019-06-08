@@ -54,7 +54,7 @@ class HinagikuClient(discord.Client):
 
         if self.is_drinking_mode_message(message.content, message.mentions):
             self.is_drinking = True
-            self.drinking_time_end = datetime.datetime.now() + datetime.timedelta(seconds=30)
+            self.drinking_time_end = datetime.datetime.now() + datetime.timedelta(minutes=30)
             await self.target_channel.send("debug:泥酔タイム開始")
 
     async def on_ecc_state_changed(self, message):
@@ -86,7 +86,7 @@ class HinagikuClient(discord.Client):
             await asyncio.sleep(10)
 
     def is_gerotter_mode(self):
-        return date_ext.is_friday() or self.is_drinking
+        return date_ext.is_friday_night() or self.is_drinking
 
     def is_drinking_mode_message(self, message, mention):
         return '酒' in message or '飲' in message or self.user in mention
