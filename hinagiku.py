@@ -57,6 +57,11 @@ class HinagikuClient(discord.Client):
             self.drinking_time_end = datetime.datetime.now() + datetime.timedelta(minutes=30)
             await self.target_channel.send("debug:泥酔タイム開始")
 
+        if self.is_drinking and self.is_drinking_stop_message(message.content, message.mentions):
+            self.is_drinking = False
+            self.drinking_time_end = None
+            await self.target_channel.send("debug:泥酔タイム終了")
+
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)
 
@@ -89,7 +94,10 @@ class HinagikuClient(discord.Client):
         return date_ext.is_friday_night() or self.is_drinking
 
     def is_drinking_mode_message(self, message, mention):
-        return '酒' in message or '飲' in message or self.user in mention
+        return ('酒' in message or '飲' in message) and self.user in mention
+
+    def is_drinking_stop_message(self, message, mention):
+        return ('ポカリ' in message or 'アクエリ' in message or 'スポドリ' in message or 'スポーツドリンク' in message) and self.user in mention
 
 
 def random(boarder, max=3):
