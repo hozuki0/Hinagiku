@@ -20,6 +20,8 @@ class HinagikuClient(discord.Client):
         self.said_ecc_opening = False
         self.said_ecc_closing = False
         self.kagisime_ozisann = False
+        self.gerotter_counter = 0
+        self.GERO_LIMIT = 3
         asyncio.ensure_future(self.schedule_pending())
 
     async def on_message(self, message):
@@ -32,7 +34,18 @@ class HinagikuClient(discord.Client):
             await self.target_channel.send('UD!')
         
         if message.content.lower() == 'yukitterの真似して':
-            await self.target_channel.send('' ,file=discord.File('./Resource/gone.jpg'))
+            if True:
+                self.gerotter_counter += 1
+                if self.gerotter_counter > self.GERO_LIMIT:
+                    self.gerotter_counter = 0
+                    await self.target_channel.send('ｺﾞﾒﾝ',file=discord.File('./Resource/gerotter.jpg'))
+                else:
+                    urtla = ''
+                    for n in range(self.gerotter_counter):
+                        urtla += 'ﾍｱｯ'
+                    await self.target_channel.send(urtla)
+            else:
+                await self.target_channel.send('' ,file=discord.File('./Resource/gone.jpg'))
 
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)
