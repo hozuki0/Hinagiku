@@ -30,9 +30,11 @@ class HinagikuClient(discord.Client):
 
     async def on_message(self, message):
         # 発言者がdoseisannの時一定確率で無視する
-        if message.author == self.doseisann:
-            if random(1):
+        if message.author == self.doseisann or True:
+            if check_doseisann(3, max=10):
+                await self.target_channel.send('右日本に住んでいるな...!!貴様ッ!!')
                 return
+
         # UD機能
         if '下' in message.content or 'した' in message.content or 'sita' in message.content.lower():
             await self.target_channel.send('UD!')
@@ -100,7 +102,7 @@ class HinagikuClient(discord.Client):
         return ('ポカリ' in message or 'アクエリ' in message or 'スポドリ' in message or 'スポーツドリンク' in message) and self.user in mention
 
 
-def random(boarder, max=3):
+def check_doseisann(boarder, max=3):
     return random.randint(0, max) <= boarder
 
 
