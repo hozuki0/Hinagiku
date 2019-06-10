@@ -13,8 +13,11 @@ def main():
         '1D6+10 < 5 [RoR2]'
     ]
     for n in test_message:
-        print(is_dice_roll(n))
-        print(parse_dice(n))
+        print(f"DiceRoll:{is_dice_roll(n)}")
+        dice_info = parse_dice(n)
+        print(f"DiceCount:{dice_info[0]} & DiceSideCount:{dice_info[1]}")
+        print(f"HasCondition:{has_conditional_expression(n)}")
+        print("")
 
 def is_dice_roll(message):
     return ('d' in message or 'D' in message) and '+' in message
@@ -34,5 +37,9 @@ def parse_dice(message):
         temp_str_array += [lower_message[n]]
     dice_side = int(''.join(temp_str_array))
     return (dice_count,dice_side)
+
+def has_conditional_expression(message):
+    return ('<' in message or '>' in message or '<=' in message or '>=' in message)
+
 if __name__ == '__main__':
     main()
