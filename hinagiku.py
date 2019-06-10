@@ -4,6 +4,7 @@ import asyncio
 import time
 import date_ext
 import datetime
+import dice_roll
 
 doseisasnn_user_name = 'doseisann'
 debug_room_name = 'yuppibot-debug'
@@ -30,7 +31,7 @@ class HinagikuClient(discord.Client):
 
     async def on_message(self, message):
         # 発言者がdoseisannの時一定確率で無視する
-        if message.author == self.doseisann or True:
+        if message.author == self.doseisann:
             if check_doseisann(3, max=10):
                 await self.target_channel.send('右日本に住んでいるな...!!貴様ッ!!')
                 return
@@ -63,6 +64,13 @@ class HinagikuClient(discord.Client):
             self.is_drinking = False
             self.drinking_time_end = None
             await self.target_channel.send("debug:泥酔タイム終了")
+
+        if dice_roll.is_dice_roll(message.content):
+            dice_info = dice_roll.parse_dice(message.content)
+            dice_result = dice_roll.execute_dice_roll(
+                dice_info[0], dice_info[1])
+            result = dice_roll.execute(message.content, dice_result)
+            await self.target_channel.send(dice_roll.create_result_message(message.content, dice_result, result))
 
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)
