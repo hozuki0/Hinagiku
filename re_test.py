@@ -70,10 +70,9 @@ def execute_dice_roll(count, side_count):
         sum += random.randint(0, side_count)
     return sum
 
-# messageから < , > , <= , >= と数字を抽出する
-
 
 def extract_conditions(message):
+    # messageから < , > , <= , >= と数字を抽出する
     conditions = ['<', '>', '<=', '>=']
     condition_pos = -1
     for condition in conditions:
