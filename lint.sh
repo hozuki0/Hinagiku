@@ -1,5 +1,6 @@
 #!/bin/bash
 
-python -m autopep8 --in-place hinagiku.py
-python -m autopep8 --in-place date_ext.py
+for f in ./*.py; do
+    python -m autopep8 --in-place ${f}
+done
 exit 0
