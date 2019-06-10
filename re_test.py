@@ -1,21 +1,32 @@
 import re
 import sys
+import random
 
 
 def main():
-    test_message = [
+    test_messagee = [
         '1d6+10',
         '1d6+10 < 5',
         '1d6+10 < 5 [RoR2]',
 
         '1D6+10',
         '1D6+10 < 5',
-        '1D6+10 < 5 [RoR2]'
+        '1D6+10 < 5 [RoR2]',
+
+        'Yukitterの真似して',
+        'sita',
+        '上下UD',
+        '酒!',
     ]
     for n in test_message:
-        print(f"DiceRoll:{is_dice_roll(n)}")
+        d = is_dice_roll(n)
+        print(f"DiceRoll:{d}")
+        if not d:
+            print("")
+            continue
         dice_info = parse_dice(n)
         print(f"DiceCount:{dice_info[0]} & DiceSideCount:{dice_info[1]}")
+        print(execute_dice_roll(dice_info[0], dice_info[1]))
         print(f"HasCondition:{has_conditional_expression(n)}")
         print("")
 
@@ -44,6 +55,13 @@ def parse_dice(message):
 
 def has_conditional_expression(message):
     return ('<' in message or '>' in message or '<=' in message or '>=' in message)
+
+
+def execute_dice_roll(count, side_count):
+    sum = 0
+    for n in range(count):
+        sum += random.randint(0, side_count)
+    return sum
 
 
 if __name__ == '__main__':
