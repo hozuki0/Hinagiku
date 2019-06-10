@@ -31,10 +31,12 @@ def main():
             continue
         dice_info = parse_dice(n)
         print(f"DiceCount:{dice_info[0]} & DiceSideCount:{dice_info[1]}")
-        print(execute_dice_roll(dice_info[0], dice_info[1]))
+        dice_result = execute_dice_roll(dice_info[0], dice_info[1])
+        print(dice_result)
         print(f"HasCondition:{has_conditional_expression(n)}")
         print(extract_conditions(n))
         print(f"HasOption:{has_option(n)}")
+        print(execute(n, dice_result))
         print("")
 
 
@@ -73,13 +75,7 @@ def execute_dice_roll(count, side_count):
 
 def extract_conditions(message):
     # messageから < , > , <= , >= と数字を抽出する
-    conditions = ['<', '>', '<=', '>=']
-    condition_pos = -1
-    for condition in conditions:
-        p = message.find(condition)
-        if p != -1:
-            condition_pos = p
-
+    condition_pos = find_condition(message)
     if condition_pos == -1:
         return None
 
@@ -91,6 +87,24 @@ def extract_conditions(message):
 
 def has_option(message):
     return '[' in message and ']' in message
+
+
+def find_condition(message):
+    conditions = ['<', '>', '<=', '>=']
+    for condition in conditions:
+        p = message.find(condition)
+        if p != -1:
+            return p
+    return None
+
+
+def execute(message, dice_result):
+    first_plus_pos = message.find('+')
+    if has_option(message):
+        remove_dice = message[first_plus_pos:message.find('[')]
+    else:
+        remove_dice = message[first_plus_pos:len(message)]
+    return eval(str(dice_result) + remove_dice)
 
 
 if __name__ == '__main__':
