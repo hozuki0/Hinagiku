@@ -33,6 +33,8 @@ def main():
         print(f"DiceCount:{dice_info[0]} & DiceSideCount:{dice_info[1]}")
         print(execute_dice_roll(dice_info[0], dice_info[1]))
         print(f"HasCondition:{has_conditional_expression(n)}")
+        print(extract_conditions(n))
+        print(f"HasOption:{has_option(n)}")
         print("")
 
 
@@ -81,7 +83,15 @@ def extract_conditions(message):
 
     if condition_pos == -1:
         return None
-    message[condition_pos:]
+
+    if has_option(message):
+        return message[condition_pos:message.find('[') - 1]
+    else:
+        return message[condition_pos:len(message)]
+
+
+def has_option(message):
+    return '[' in message and ']' in message
 
 
 if __name__ == '__main__':
