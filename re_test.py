@@ -4,10 +4,14 @@ import random
 
 
 def main():
-    test_messagee = [
+    test_message = [
         '1d6+10',
         '1d6+10 < 5',
         '1d6+10 < 5 [RoR2]',
+
+        '10d6+10',
+        '100d6+10 < 5',
+        '1000d6+10 < 5 [RoR2]',
 
         '1D6+10',
         '1D6+10 < 5',
@@ -19,6 +23,7 @@ def main():
         '酒!',
     ]
     for n in test_message:
+        print(n)
         d = is_dice_roll(n)
         print(f"DiceRoll:{d}")
         if not d:
@@ -43,7 +48,7 @@ def parse_dice(message):
         temp_str_array += [lower_message[n]]
     dice_count = int(''.join(temp_str_array))
     lower_message = lower_message[first_d_pos +
-                                  1:len(lower_message) - first_d_pos - 1]
+                                  1:len(lower_message)]
     first_plus_pos = lower_message.find('+')
 
     temp_str_array = []
@@ -62,6 +67,21 @@ def execute_dice_roll(count, side_count):
     for n in range(count):
         sum += random.randint(0, side_count)
     return sum
+
+# messageから < , > , <= , >= と数字を抽出する
+
+
+def extract_conditions(message):
+    conditions = ['<', '>', '<=', '>=']
+    condition_pos = -1
+    for condition in conditions:
+        p = message.find(condition)
+        if p != -1:
+            condition_pos = p
+
+    if condition_pos == -1:
+        return None
+    message[condition_pos:]
 
 
 if __name__ == '__main__':
