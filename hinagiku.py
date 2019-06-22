@@ -6,6 +6,7 @@ import date_ext
 import datetime
 import dice_roll
 from line_loader import line_loader as ll
+import is_xxx
 
 doseisasnn_user_name = 'doseisann'
 debug_room_name = 'yuppibot-debug'
@@ -84,6 +85,11 @@ class HinagikuClient(discord.Client):
                     dice_result,
                     result))
 
+        if is_xxx.is_isXXX_format(message.content):
+            await self.target_channel.send(message.author.mention + ' ' +
+                                           is_xxx.create_reply(
+                                               message.content))
+
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)
 
@@ -120,8 +126,8 @@ class HinagikuClient(discord.Client):
 
     def is_drinking_mode_message(self, message, mention):
         return (self.line_arch.search('sake') in message
-                or self.line_arch.search('nomu') in message)
-        and self.user in mention
+                or self.line_arch.search('nomu') in message) \
+            and self.user in mention
 
     def is_drinking_stop_message(self, message, mention):
         return (self.line_arch.search('pokari') in message
