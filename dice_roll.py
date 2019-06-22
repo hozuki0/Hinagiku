@@ -5,7 +5,14 @@ import random
 
 def main():
     test_messages = [
-        # testcase , dice? , dice_count , dice_side , dice result min ,dice result max, has condition,has option
+        # testcase format
+        # dice?
+        # dice count
+        # dice side
+        # dice result min
+        # dice result max
+        # has condition ?
+        # has option ?
 
         # d
         ['1d6+10', True, 1, 6, 1, 16, False, False],
@@ -48,7 +55,8 @@ def main():
         dice_result = execute_dice_roll(dice_info[0], dice_info[1])
         if not (dice_result >= n[4] and dice_result <= n[5]):
             print(f"Test Failed:ExecuteDice is wrong "
-                  "expected range is {n[4]} ~ {n[5]} but result was {dice_result}")
+                  "expected range is {n[4]} ~ {n[5]}"
+                  "but result was {dice_result}")
             print("")
             continue
         result = execute(n[0], dice_result)
@@ -64,7 +72,7 @@ def main():
 
 
 def is_dice_roll(message):
-    return re.match('\d+d\d', message.lower()) != None
+    return re.match(r'\d+d\d', message.lower()) is not None
 
 
 def has_operation(message):
@@ -150,7 +158,7 @@ def find_operation(message):
 
 
 def execute(message, dice_result):
-    m = re.match('\d+d\d+', message.lower())
+    m = re.match(r'\d+d\d+', message.lower())
     message = message[m.end():]
     below = extract_below_comp_operator(message)
     return eval(str(dice_result) + below + extract_comp_expression(message))
