@@ -4,53 +4,65 @@ import random
 
 
 def main():
-    test_message = [
-        '1d6+10',
-        '1d6+10 < 5',
-        '1d6+10 < 5 [RoR2]',
+    test_messages = [
+        # testcase , dice? , dice_count , dice_side , dice result min ,dice result max, has condition,has option
+        
+        # d
+        ['1d6+10',True,1,6,1,16,False,False],
+        ['1d6+10 < 5',True,1,6,1,16,True,False],
+        ['1d6+10 < 5 [RoR2]',True,1,6,1,16,True,True],
+        
+        # D
+        ['1D6+10',True,1,6,1,16,False,False],
+        ['1D6+10 < 5',True,1,6,1,16,True,False],
+        ['1D6+10 < 5 [RoR2]',True,1,6,1,16,True,True],
 
-        '10d6+10',
-        '100d6+10 < 5',
-        '1000d6+10 < 5 [RoR2]',
+        # dice count = 0
+        ['0D6+10 < 5',True,0,6,0,0,True,False],
 
-        '1D6+10',
-        '1D6+10 < 5',
-        '1D6+10 < 5 [RoR2]',
+        # dice side = 0
+        ['10D0+10 < 5',True,10,0,0,0,True,False],
 
-        '0D6+10 < 5',
-        '10D0+10 < 5',
+        # minus
+        ['1d6-10',True,1,6,1,6,False,False],
+        ['1d6-10 < 5',True,1,6,1,6,True,False],
+        ['1d6-10 < 5 [RoR2]',True,1,6,1,6,True,True],
 
-        '1d6-10',
-        '1d6-10 < 5',
-        '1d6-10 < 5 [RoR2]',
-
-        '0D6 < 5',
-        '10D0 < 5',
-        '10D10 < 5',
-
-        '1d100 - 10 < 50 [RoR2]',
-
-        'Yukitterの真似して',
-        'sita',
-        '上下UD',
-        '酒!',
+        ['Yukitterの真似して',False],
+        ['sita',False],
+        ['上下UD',False],
+        ['酒!',False],
     ]
-    for n in test_message:
-        print(n)
-        d = is_dice_roll(n)
-        print(f"DiceRoll:{d}")
+    for n in test_messages:
+        print(n[0])
+        d = is_dice_roll(n[0])
+        if d != n[1]:
+            print("Test Failed:IsDiceRoll is wrong")
+            continue
         if not d:
+            continue
+
+        dice_info = parse_dice(n[0])
+        if dice_info[0] != n[2]:
+            print("Test Failed:DiceCount in ParseDice is wrong")
+            continue
+        if dice_info[1] != n[3]:
+            print("Test Failed:DiceSide in ParseDice is wrong")
+            continue
+        dice_result = execute_dice_roll(dice_info[0], dice_info[1])
+        if not (dice_result >= n[4] and dice_result <= n[5]):
+            print(f"Test Failed:ExecuteDice is wrong expected range is {n[4]} ~ {n[5]} but result was {dice_result}")
             print("")
             continue
-        dice_info = parse_dice(n)
-        print(f"DiceCount:{dice_info[0]} & DiceSideCount:{dice_info[1]}")
-        dice_result = execute_dice_roll(dice_info[0], dice_info[1])
-        print(dice_result)
-        print(f"HasCondition:{has_conditional_expression(n)}")
-        print(extract_conditions(n))
-        print(f"HasOption:{has_option(n)}")
-        result = execute(n, dice_result)
-        print(create_result_message(n, dice_result, result))
+        result = execute(n[0], dice_result)
+        if n[6] and type(result) != bool:
+            print("Test Failed:Execute is wrong")
+            continue
+           
+        if n[7] != has_option(n[0]):
+            print("Test Failed:Option is wrong")
+            continue
+        print(create_result_message(n[0], dice_result, result))
         print("")
 
 
@@ -95,8 +107,10 @@ def has_conditional_expression(message):
 
 def execute_dice_roll(count, side_count):
     sum = 0
+    if side_count == 0 or count == 0:
+        return sum
     for n in range(count):
-        sum += random.randint(0, side_count)
+        sum += random.randint(1, side_count)
     return sum
 
 
