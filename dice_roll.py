@@ -20,9 +20,15 @@ def main():
         '0D6+10 < 5',
         '10D0+10 < 5',
 
+        '1d6-10',
+        '1d6-10 < 5',
+        '1d6-10 < 5 [RoR2]',
+
         '0D6 < 5',
         '10D0 < 5',
         '10D10 < 5',
+
+        '1d100 - 10 < 50 [RoR2]',
 
         'Yukitterの真似して',
         'sita',
@@ -52,9 +58,8 @@ def is_dice_roll(message):
     return re.match('\d+d\d', message.lower()) != None
 
 
-def has_plus(message):
-    return '+' in message
-
+def has_operation(message):
+    return '+' in message or '-' in message or '*' in message or '/' in message
 
 def parse_dice(message):
     lower_message = message.lower()
@@ -119,36 +124,60 @@ def find_condition(message):
             return p
     return None
 
+def find_operation(message):
+    conditions = ['+', '-', '*', '/']
+    for condition in conditions:
+        p = message.find(condition)
+        if p != -1:
+            return p
+    return None
 
 def execute(message, dice_result):
-    return eval(str(dice_result) + extract_other_than_dice_exp(message))
+    m = re.match('\d+d\d+', message.lower()) 
+    message = message[m.end():]
+    below = extract_below_comp_operator(message)
+    print("below:" + str(below))
+    print("comp:" + extract_comp_expression(message)) 
+    print("result :" + str(eval(str(dice_result) + below + extract_comp_expression(message))))
+    return eval(str(dice_result) + below + extract_comp_expression(message))
 
 
-def extract_other_than_dice_exp(message):
-    if not has_plus(message):
+def extract_comp_expression(message):
+    if not has_conditional_expression(message):
         return ''
-    first_plus_pos = message.find('+')
+    first_cond_pos = find_condition(message)
     if has_option(message):
-        return message[first_plus_pos:message.find('[')]
-    else:
+        return message[first_cond_pos:message.find('[')]
+    return message[first_cond_pos:]
+
+def extract_above_comp_operator(message):
+    if has_operation(message):
+        return message[:find_operation(message)]
+    return ''
+
+def extract_below_comp_operator(message):
+    if has_operation(message):
+        ope = find_operation(message)
         cond = find_condition(message)
         if cond == None:
-            return message[first_plus_pos:len(message)]
+            return message[ope:len(message)]
         else:
-            return message[first_plus_pos:cond]
-
+            return message[ope:cond]
+    return ''
 
 def create_result_message(message, dice_result, evaluate_result):
-    ev = 'Success!' if evaluate_result else 'Failed...'
-    opt = extract_option(message)
-    if opt != '':
-        opt += ' '
+    if has_conditional_expression(message):
+        ev = 'Error'
+        if evaluate_result == True:
+            ev = 'Success!' 
+        elif evaluate_result == False:
+            ev = 'Failed...' 
+        opt = extract_option(message)
+        if opt != '':
+            opt += ' '
 
-    n = extract_other_than_dice_exp(message)
-    if n != '':
-        return (opt + str(dice_result + eval(n)) + ' ' + extract_conditions(message) + ' -> ' + ev)
-    else:
         return (opt + str(dice_result) + ' ' + extract_conditions(message) + ' -> ' + ev)
+    return str(dice_result)
 
 
 def extract_option(message):
