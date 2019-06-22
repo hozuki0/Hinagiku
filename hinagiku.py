@@ -80,11 +80,11 @@ class HinagikuClient(discord.Client):
             dice_result = dice_roll.execute_dice_roll(
                 dice_info[0], dice_info[1])
             result = dice_roll.execute(message.content, dice_result)
-            await self.target_channel.send(
-                dice_roll.create_result_message(
-                    message.content,
-                    dice_result,
-                    result))
+            await self.target_channel.send(message.author.mention + ' ' +
+                                           dice_roll.create_result_message(
+                                               message.content,
+                                               dice_result,
+                                               result))
 
         if is_xxx.is_isXXX_format(message.content):
             await self.target_channel.send(message.author.mention + ' ' +
