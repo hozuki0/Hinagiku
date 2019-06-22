@@ -5,6 +5,7 @@ import time
 import date_ext
 import datetime
 import dice_roll
+from line_loader import line_loader as ll
 
 doseisasnn_user_name = 'doseisann'
 debug_room_name = 'yuppibot-debug'
@@ -12,6 +13,7 @@ debug_room_name = 'yuppibot-debug'
 
 class HinagikuClient(discord.Client):
     async def on_ready(self):
+        self.line_arch = ll('./line.json')
         print('Login')
         for n in self.get_all_members():
             if n.name == doseisasnn_user_name:
@@ -30,63 +32,75 @@ class HinagikuClient(discord.Client):
         asyncio.ensure_future(self.schedule_pending())
 
     async def on_message(self, message):
-        # 発言者がdoseisannの時一定確率で無視する
         if message.author == self.doseisann:
             if check_doseisann(3, max=10):
-                await self.target_channel.send('右日本に住んでいるな...!!貴様ッ!!')
+                await self.target_channel.send('')
                 return
 
-        # UD機能
-        if '下' in message.content or 'した' in message.content or 'sita' in message.content.lower():
+        if self.line_arch.search('sita-kanji') in message.content \
+                or self.line_arch.search('sita-hiragana') in message.content \
+                or self.line_arch.search('sita-kana') in message.content \
+                or self.line_arch.search('sita') in message.content:
             await self.target_channel.send('UD!')
 
-        # Yukitterモード
-        if message.content.lower() == 'yukitterの真似して':
+        if message.content.lower() == self.line_arch.search('yukitter-mimick'):
             if self.is_gerotter_mode():
                 self.gerotter_counter += 1
                 if self.gerotter_counter > self.GERO_LIMIT:
                     self.gerotter_counter = 0
-                    await self.target_channel.send('ｺﾞﾒﾝ', file=discord.File('./Resource/gerotter.jpg'))
+                    await self.target_channel.send(
+                        self.line_arch.search('sorry'),
+                        file=discord.File('./Resource/gerotter.jpg'))
                 else:
                     urtla = ''
                     for n in range(self.gerotter_counter):
-                        urtla += 'ﾍｱｯ'
+                        urtla += self.line_arch.search('ultraman')
                     await self.target_channel.send(urtla)
             else:
-                await self.target_channel.send('', file=discord.File('./Resource/gone.jpg'))
+                await self.target_channel.send('',
+                                               file=discord.File(
+                                                   './Resource/gone.jpg'))
 
         if self.is_drinking_mode_message(message.content, message.mentions):
             self.is_drinking = True
-            self.drinking_time_end = datetime.datetime.now() + datetime.timedelta(minutes=30)
-            await self.target_channel.send("debug:泥酔タイム開始")
+            self.drinking_time_end = datetime.datetime.now()
+            + datetime.timedelta(minutes=30)
+            await self.target_channel.send("debug:start drinking")
 
-        if self.is_drinking and self.is_drinking_stop_message(message.content, message.mentions):
+        if self.is_drinking and self.is_drinking_stop_message(
+                message.content, message.mentions):
             self.is_drinking = False
             self.drinking_time_end = None
-            await self.target_channel.send("debug:泥酔タイム終了")
+            await self.target_channel.send("debug:stop drinking")
 
         if dice_roll.is_dice_roll(message.content):
             dice_info = dice_roll.parse_dice(message.content)
             dice_result = dice_roll.execute_dice_roll(
                 dice_info[0], dice_info[1])
             result = dice_roll.execute(message.content, dice_result)
-            await self.target_channel.send(dice_roll.create_result_message(message.content, dice_result, result))
+            await self.target_channel.send(
+                dice_roll.create_result_message(
+                    message.content,
+                    dice_result,
+                    result))
 
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)
 
     async def schedule_pending(self):
         while True:
-            # 毎朝05:30と20:45をスケジュールして関数を発行する
             time_formatted_str = time.strftime('%H:%M', time.localtime())
             if not self.said_ecc_opening and time_formatted_str == '05:30':
-                await self.target_channel.send('ECCの門が開きだす...')
+                await self.target_channel.send(
+                    self.line_arch.search('open-ecc'))
                 self.said_ecc_opening = True
             if not self.said_ecc_closing and time_formatted_str == '20:45':
-                await self.target_channel.send('ECCの門が閉まりだす...')
+                await self.target_channel.send(
+                    self.line_arch.search('close-ecc'))
                 self.said_ecc_closing = True
             if not self.kagisime_ozisann and time_formatted_str == '19:55':
-                await self.target_channel.send('もうここだけやから!もうここだけやから!!')
+                await self.target_channel.send(
+                    self.line_arch.search('kagisime'))
                 self.kagisime_ozisann = True
 
             if time_formatted_str == '12:00':
@@ -94,20 +108,27 @@ class HinagikuClient(discord.Client):
                 self.said_ecc_closing = False
                 self.kagisime_ozisann = False
 
-            if self.is_drinking and datetime.datetime.now() > self.drinking_time_end:
+            if self.is_drinking \
+                    and datetime.datetime.now() > self.drinking_time_end:
                 self.drinking_time_end = None
                 self.is_drinking = False
-                await self.target_channel.send("debug:泥酔タイム終了")
+                await self.target_channel.send("debug:stop drinking")
             await asyncio.sleep(10)
 
     def is_gerotter_mode(self):
         return date_ext.is_friday_night() or self.is_drinking
 
     def is_drinking_mode_message(self, message, mention):
-        return ('酒' in message or '飲' in message) and self.user in mention
+        return (self.line_arch.search('sake') in message
+                or self.line_arch.search('nomu') in message)
+        and self.user in mention
 
     def is_drinking_stop_message(self, message, mention):
-        return ('ポカリ' in message or 'アクエリ' in message or 'スポドリ' in message or 'スポーツドリンク' in message) and self.user in mention
+        return (self.line_arch.search('pokari') in message
+                or self.line_arch.search('akueri') in message
+                or self.line_arch.search('spordori') in message
+                or self.line_arch.search('sportdrink') in message) \
+            and self.user in mention
 
 
 def check_doseisann(boarder, max=3):
@@ -116,7 +137,6 @@ def check_doseisann(boarder, max=3):
 
 def main():
     token = ''
-    # 外部からトークンを読み込む
     with open('token.tk') as f:
         token = f.read().strip()
     client = HinagikuClient()
