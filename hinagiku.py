@@ -35,8 +35,9 @@ class HinagikuClient(discord.Client):
     async def on_message(self, message):
         if message.author == self.doseisann:
             if check_doseisann(3, max=10):
-                await self.target_channel.send('')
-                return
+                await self.target_channel.send(
+                    self.line_arch.search('4doseisan'))
+                # return
 
         if self.line_arch.search('sita-kanji') in message.content \
                 or self.line_arch.search('sita-hiragana') in message.content \
