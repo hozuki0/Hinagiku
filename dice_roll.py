@@ -17,6 +17,13 @@ def main():
         '1D6+10 < 5',
         '1D6+10 < 5 [RoR2]',
 
+        '0D6+10 < 5',
+        '10D0+10 < 5',
+
+        '0D6 < 5',
+        '10D0 < 5',
+        '10D10 < 5',
+
         'Yukitterの真似して',
         'sita',
         '上下UD',
@@ -42,7 +49,11 @@ def main():
 
 
 def is_dice_roll(message):
-    return ('d' in message or 'D' in message) and '+' in message
+    return re.match('\d+d\d', message.lower()) != None
+
+
+def has_plus(message):
+    return '+' in message
 
 
 def parse_dice(message):
@@ -54,13 +65,23 @@ def parse_dice(message):
     dice_count = int(''.join(temp_str_array))
     lower_message = lower_message[first_d_pos +
                                   1:len(lower_message)]
-    first_plus_pos = lower_message.find('+')
 
+    non_num_pos = find_non_num_pos(lower_message)
     temp_str_array = []
-    for n in range(first_plus_pos):
+    for n in range(non_num_pos):
         temp_str_array += [lower_message[n]]
     dice_side = int(''.join(temp_str_array))
+
     return (dice_count, dice_side)
+
+
+def find_non_num_pos(message):
+    pos = 0
+    for n in message:
+        if n != ' ' and not n.isnumeric():
+            return pos
+        pos += 1
+    return pos
 
 
 def has_conditional_expression(message):
@@ -104,11 +125,17 @@ def execute(message, dice_result):
 
 
 def extract_other_than_dice_exp(message):
+    if not has_plus(message):
+        return ''
     first_plus_pos = message.find('+')
     if has_option(message):
         return message[first_plus_pos:message.find('[')]
     else:
-        return message[first_plus_pos:len(message)]
+        cond = find_condition(message)
+        if cond == None:
+            return message[first_plus_pos:len(message)]
+        else:
+            return message[first_plus_pos:cond]
 
 
 def create_result_message(message, dice_result, evaluate_result):
@@ -116,7 +143,12 @@ def create_result_message(message, dice_result, evaluate_result):
     opt = extract_option(message)
     if opt != '':
         opt += ' '
-    return (opt + str(dice_result + eval(extract_other_than_dice_exp(message))) + ' ' + extract_conditions(message) + ' -> ' + ev)
+
+    n = extract_other_than_dice_exp(message)
+    if n != '':
+        return (opt + str(dice_result + eval(n)) + ' ' + extract_conditions(message) + ' -> ' + ev)
+    else:
+        return (opt + str(dice_result) + ' ' + extract_conditions(message) + ' -> ' + ev)
 
 
 def extract_option(message):
