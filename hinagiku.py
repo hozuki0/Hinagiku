@@ -77,14 +77,19 @@ class HinagikuClient(discord.Client):
 
         if dice_roll.is_dice_roll(message.content):
             dice_info = dice_roll.parse_dice(message.content)
-            dice_result = dice_roll.execute_dice_roll(
-                dice_info[0], dice_info[1])
-            result = dice_roll.execute(message.content, dice_result)
+            parsed_dice = dice_roll.parse_dice_info(dice_info[0])
+
+            dice_result = dice_roll.execute_dice_roll(parsed_dice)
+            operator_result = dice_roll.ev_operator(dice_result, dice_info[1])
+            comparison_result = dice_roll.ev_comparison_expression(
+                operator_result, dice_info[2])
+
+            result_message = dice_roll.create_result_message(
+                operator_result, dice_info[2], comparison_result)
+            if dice_info[3] != '':
+                dice_info[3] += ' '
             await self.target_channel.send(message.author.mention + ' ' +
-                                           dice_roll.create_result_message(
-                                               message.content,
-                                               dice_result,
-                                               result))
+                                           dice_info[3] + result_message)
 
         if is_xxx.is_isXXX_format(message.content):
             await self.target_channel.send(message.author.mention + ' ' +
