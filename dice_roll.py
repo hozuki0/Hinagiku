@@ -63,7 +63,6 @@ def main():
             print("Test Failed:DiceCount in ParseDiceInfo is wrong"
                   f"expected {n[2]} but result was {parsed_dice[0]}")
             continue
-
         if parsed_dice[1] != n[3]:
             print("Test Failed:DiceSide in ParseDiceInfo is wrong"
                   f"expected {n[3]} but result was {parsed_dice[1]}")
@@ -73,17 +72,20 @@ def main():
             print(f"Test Failed:ExecuteDice is wrong "
                   f"expected range is {n[4]} ~ {n[5]}"
                   f"but result was {dice_result}")
-        #     print("")
-        #     continue
-        # result = execute(n[0], dice_result)
-        # if n[6] and type(result) != bool:
-        #     print("Test Failed:Execute is wrong")
-        #     continue
+        operator_result = ev_operator(dice_result, dice_info[1])
+        comparison_result = ev_comparison_expression(
+            operator_result, dice_info[2])
+        if n[6] and type(comparison_result) != bool:
+            print("Test Failed:Execute is wrong")
+            continue
 
-        # if n[7] != has_option(n[0]):
-        #     print("Test Failed:Option is wrong")
-        #     continue
-        # print(create_result_message(n[0], dice_result, result))
+        result_message = create_result_message(operator_result,
+                                               dice_info[2], comparison_result)
+        if n[7] != has_option(n[0]):
+            print("Test Failed:Option is wrong")
+            continue
+        else:
+            print(dice_info[3] + ' ' + result_message)
 
 
 def is_dice_roll(message):
@@ -128,7 +130,10 @@ def parse_dice(message):
 
     if condition:
         condition_match = re.search(r'[<|>|<=|>=]\d+', message)
-        ret += [condition_match.group()]
+        n = condition_match.group()
+        cond_end = re.search(r'[<|>|<=|>=|]', condition_match.group()).end()
+        n = n[:cond_end] + ' ' + n[cond_end:]
+        ret += [n]
     else:
         ret += [""]
 
@@ -160,6 +165,23 @@ def execute_dice_roll(parsed_dice_info):
     for n in range(parsed_dice_info[0]):
         sum += random.randint(1, parsed_dice_info[1])
     return sum
+
+
+def ev_operator(dice_result, operator_info):
+    return eval(str(dice_result) + operator_info)
+
+
+def ev_comparison_expression(operator_result, comparison_info):
+    return eval(str(operator_result) + comparison_info)
+
+
+def create_result_message(operator_result,
+                          comparision_info,
+                          comparision_result):
+    if comparision_info != '':
+        comparision_info += ' ' \
+            + ('Success!' if comparision_result else 'Failed...')
+    return str(operator_result) + ' ' + comparision_info
 
 
 if __name__ == '__main__':
