@@ -58,11 +58,17 @@ def main():
             continue
 
         dice_info = parse_dice(n[0])
-        for n in dice_info:
-            print(n)
+        parsed_dice = parse_dice_info(dice_info[0])
+        if parsed_dice[0] != n[2]:
+            print("Test Failed:DiceCount in ParseDiceInfo is wrong"
+                  f"expected {n[2]} but result was {parsed_dice[0]}")
+            continue
+
+        if parsed_dice[1] != n[3]:
+            print("Test Failed:DiceSide in ParseDiceInfo is wrong"
+                  f"expected {n[3]} but result was {parsed_dice[1]}")
+            continue
         # if dice_info[0] != n[2]:
-        #     print("Test Failed:DiceCount in ParseDice is wrong")
-        #     continue
         # if dice_info[1] != n[3]:
         #     print("Test Failed:DiceSide in ParseDice is wrong")
         #     continue
@@ -136,6 +142,21 @@ def parse_dice(message):
     else:
         ret += [""]
     return ret
+
+
+def parse_dice_info(dice_info):
+    dice_count_match = re.match(r'\d+', dice_info)
+    dice_count = int(dice_count_match.group())
+
+    dice_info = dice_info[dice_count_match.end() + 1:]
+    dice_side_match = re.match(r'\d+', dice_info)
+    dice_side = int(dice_side_match.group())
+
+    return (dice_count, dice_side)
+
+
+def execute_dice_roll(parsed_dice_info):
+    pass
 
 
 if __name__ == '__main__':
