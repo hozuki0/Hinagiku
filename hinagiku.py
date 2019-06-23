@@ -15,10 +15,13 @@ debug_room_name = 'yuppibot-debug'
 class HinagikuClient(discord.Client):
     async def on_ready(self):
         self.line_arch = ll('./line.json')
+        self.is_release = False
         print('Login')
         for n in self.get_all_members():
             if n.name == doseisasnn_user_name:
                 self.doseisann = n
+            if 'Yuppi' in n.name:
+                self.me = n
         for channel in self.get_all_channels():
             if channel.name == debug_room_name:
                 self.target_channel = channel
@@ -31,8 +34,14 @@ class HinagikuClient(discord.Client):
         self.gerotter_counter = 0
         self.GERO_LIMIT = 3
         asyncio.ensure_future(self.schedule_pending())
+        self.debug_room = self.target_channel
 
     async def on_message(self, message):
+        if self.is_release:
+            self.target_channel = message.channel
+        else:
+            self.target_channel = self.debug_room
+
         if message.author == self.doseisann:
             if check_doseisann(3, max=10):
                 await self.target_channel.send(
@@ -95,6 +104,19 @@ class HinagikuClient(discord.Client):
             await self.target_channel.send(message.author.mention + ' ' +
                                            is_xxx.create_reply(
                                                message.content))
+        if self.me.mention in message.content and \
+                self.line_arch.search('release') in message.content:
+            self.is_release = True
+            await self.target_channel.send(
+                'debug:' +
+                self.line_arch.search('debug-release-message'))
+
+        if self.me.mention in message.content and \
+                self.line_arch.search('debug') in message.content:
+            self.is_release = False
+            await self.target_channel.send(
+                'debug:' +
+                self.line_arch.search('debug-debug-message'))
 
     async def on_ecc_state_changed(self, message):
         await self.target_channel.send(message)

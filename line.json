@@ -15,5 +15,9 @@
   "spordori": "スポドリ",
   "sportdrink": "スポーツドリンク",
   "open-ecc": "ECCの門が開きだす...",
-  "close-ecc": "ECCの門が閉まりだす..."
+  "close-ecc": "ECCの門が閉まりだす...",
+  "debug-release-message": "Yuppiが試験的に解放されます",
+  "debug-debug-message": "YuppiがDebug部屋に帰ります",
+  "release":"出ろ",
+  "debug":"失せろ"
 }
