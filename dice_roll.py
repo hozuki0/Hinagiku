@@ -68,15 +68,11 @@ def main():
             print("Test Failed:DiceSide in ParseDiceInfo is wrong"
                   f"expected {n[3]} but result was {parsed_dice[1]}")
             continue
-        # if dice_info[0] != n[2]:
-        # if dice_info[1] != n[3]:
-        #     print("Test Failed:DiceSide in ParseDice is wrong")
-        #     continue
-        # dice_result = execute_dice_roll(dice_info[0], dice_info[1])
-        # if not (dice_result >= n[4] and dice_result <= n[5]):
-        #     print(f"Test Failed:ExecuteDice is wrong "
-        #           f"expected range is {n[4]} ~ {n[5]}"
-        #           f"but result was {dice_result}")
+        dice_result = execute_dice_roll(parsed_dice)
+        if not (dice_result >= n[4] and dice_result <= n[5]):
+            print(f"Test Failed:ExecuteDice is wrong "
+                  f"expected range is {n[4]} ~ {n[5]}"
+                  f"but result was {dice_result}")
         #     print("")
         #     continue
         # result = execute(n[0], dice_result)
@@ -156,7 +152,14 @@ def parse_dice_info(dice_info):
 
 
 def execute_dice_roll(parsed_dice_info):
-    pass
+    if parsed_dice_info[0] == 0 or parsed_dice_info[1] == 0:
+        return 0
+    if parsed_dice_info[1] == 1:
+        return parsed_dice_info[0]
+    sum = 0
+    for n in range(parsed_dice_info[0]):
+        sum += random.randint(1, parsed_dice_info[1])
+    return sum
 
 
 if __name__ == '__main__':
