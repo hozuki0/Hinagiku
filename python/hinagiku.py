@@ -52,7 +52,7 @@ class HinagikuClient(discord.Client):
                     self.gerotter_counter = 0
                     await self.target_channel.send(
                         self.line_arch.search('sorry'),
-                        file=discord.File('./Resource/gerotter.jpg'))
+                        file=discord.File('../Resource/gerotter.jpg'))
                 else:
                     urtla = ''
                     for n in range(self.gerotter_counter):
@@ -61,7 +61,7 @@ class HinagikuClient(discord.Client):
             else:
                 await self.target_channel.send('',
                                                file=discord.File(
-                                                   './Resource/gone.jpg'))
+                                                   '../Resource/gone.jpg'))
 
         if self.is_drinking_mode_message(message.content, message.mentions):
             self.is_drinking = True
@@ -149,7 +149,7 @@ def check_doseisann(boarder, max=3):
 
 def main():
     token = ''
-    with open('token.tk') as f:
+    with open('../token.tk') as f:
         token = f.read().strip()
     client = HinagikuClient()
     client.run(token)
