@@ -10,6 +10,17 @@ import (
 
 var stopBot = make(chan bool)
 
+type Mode int
+
+const (
+	Normal Mode = iota
+	Banish
+	Dice
+	Gerotter
+)
+
+var isDebug = true
+
 func main() {
 	token, err := readTokenFile("../token.tk")
 	if err != nil {
@@ -47,10 +58,10 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		log.Println("Error getting channel:", err)
 	}
-	if m.Author.Username == "Yuppi☆" {
+	if isBotMessage(m) {
 		return
 	}
-	if c.Name == "yuppibot-debug" {
+	if canSendMsg(c.Name) {
 		if m.Content == "消えろ" {
 			sendMessage(s, c, "自害下UD :ud:")
 			stopBot <- true
@@ -67,4 +78,32 @@ func sendMessage(s *discordgo.Session, c *discordgo.Channel, msg string) {
 	if err != nil {
 		log.Println("Error sending message: ", err)
 	}
+}
+
+func isBotMessage(m *discordgo.MessageCreate) bool {
+	return m.Author.Bot
+}
+
+func decideMode(msg string) Mode {
+	if isBanishMsg(msg) {
+		return Banish
+	}
+	return Normal
+}
+
+func isBanishMsg(msg string) bool {
+	if strings.Contains(msg, "消えろ") || strings.Contains(msg, "きえろ") {
+		return true
+	}
+	if strings.Contains(msg, "失せろ") || strings.Contains(msg, "うせろ") {
+		return true
+	}
+	return false
+}
+
+func canSendMsg(channelName string) bool {
+	if isDebug && channelName == "yuppibot-debug" {
+		return true
+	}
+	return false
 }
