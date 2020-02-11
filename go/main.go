@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	stopBot = make(chan bool)
-	isDebug = true
-	myName  = "Yuppi☆"
+	stopBot    = make(chan bool)
+	isDebug    = true
+	isBanished = false
+	myName     = "Yuppi☆"
 )
 
 type Mode int
@@ -42,8 +43,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	defer discord.Close()
 	<-stopBot
-
 	return
 }
 
@@ -60,19 +61,14 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		log.Println("Error getting channel:", err)
 	}
-	if isBotMessage(m) {
+	if isBotMessage(m) || isBanished {
 		return
 	}
-	if canSendMsg(c.Name) {
+	if canSendMsg(c.Name) && isMentionedToMe(m) {
 		if isBanishMsg(m.Content) {
 			sendMessage(s, c, "自害下UD")
 			stopBot <- true
 			return
-		}
-		if isMentionedToMe(m) {
-			sendMessage(s, c, "俺に言うとるやんけ")
-		} else {
-			sendMessage(s, c, "俺に言うとらんやんけ")
 		}
 	}
 }
@@ -108,7 +104,7 @@ func isBanishMsg(msg string) bool {
 }
 
 func canSendMsg(channelName string) bool {
-	if isDebug && channelName == "yuppibot-debug" {
+	if isDebug || channelName == "yuppibot-debug" {
 		return true
 	}
 	return false
