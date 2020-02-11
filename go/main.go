@@ -8,7 +8,11 @@ import (
 	"strings"
 )
 
-var stopBot = make(chan bool)
+var (
+	stopBot = make(chan bool)
+	isDebug = true
+	myName  = "Yuppi☆"
+)
 
 type Mode int
 
@@ -18,8 +22,6 @@ const (
 	Dice
 	Gerotter
 )
-
-var isDebug = true
 
 func main() {
 	token, err := readTokenFile("../token.tk")
@@ -63,11 +65,15 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	if canSendMsg(c.Name) {
 		if isBanishMsg(m.Content) {
-			sendMessage(s, c, "自害下UD :ud:")
+			sendMessage(s, c, "自害下UD")
 			stopBot <- true
 			return
 		}
-		sendMessage(s, c, "Yuppi☆")
+		if isMentionedToMe(m) {
+			sendMessage(s, c, "俺に言うとるやんけ")
+		} else {
+			sendMessage(s, c, "俺に言うとらんやんけ")
+		}
 	}
 }
 
@@ -104,6 +110,15 @@ func isBanishMsg(msg string) bool {
 func canSendMsg(channelName string) bool {
 	if isDebug && channelName == "yuppibot-debug" {
 		return true
+	}
+	return false
+}
+
+func isMentionedToMe(m *discordgo.MessageCreate) bool {
+	for _, member := range m.Mentions {
+		if member.Username == myName {
+			return true
+		}
 	}
 	return false
 }
