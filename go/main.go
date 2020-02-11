@@ -6,13 +6,16 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	// "time"
 )
 
 var (
-	stopBot    = make(chan bool)
-	isDebug    = true
-	isBanished = false
-	myName     = "Yuppi☆"
+	stopBot                 = make(chan bool)
+	isDebug                 = true
+	isBanished              = false
+	myName                  = "Yuppi☆"
+	timerMessageChannelName = "yuppibot-debug"
+	prolabServerGuildID     = "527871282646220830"
 )
 
 type Mode int
@@ -43,7 +46,24 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	guild, err := discord.Guild(prolabServerGuildID)
+	if err != nil {
+		fmt.Println(err)
+	}
 	defer discord.Close()
+	var timerMessageChannel *discordgo.Channel = nil
+	for _, channel := range guild.Channels {
+		fmt.Println(channel.Name)
+		if channel.Name == timerMessageChannelName {
+			timerMessageChannel = channel
+			break
+		}
+	}
+
+	// timer event
+	go func(d *discordgo.Session, c *discordgo.Channel) {
+		timerUpdate(d, c)
+	}(discord, timerMessageChannel)
 	<-stopBot
 	return
 }
@@ -67,6 +87,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if canSendMsg(c.Name) && isMentionedToMe(m) {
 		if isBanishMsg(m.Content) {
 			sendMessage(s, c, "自害下UD")
+			isBanished = true
 			stopBot <- true
 			return
 		}
@@ -117,4 +138,12 @@ func isMentionedToMe(m *discordgo.MessageCreate) bool {
 		}
 	}
 	return false
+}
+
+func timerUpdate(d *discordgo.Session, c *discordgo.Channel) {
+	for !isBanished {
+		// sendMessage(d, c, "ok!")
+
+		break
+	}
 }
