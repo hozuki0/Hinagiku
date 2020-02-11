@@ -62,7 +62,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if canSendMsg(c.Name) {
-		if m.Content == "消えろ" {
+		if isBanishMsg(m.Content) {
 			sendMessage(s, c, "自害下UD :ud:")
 			stopBot <- true
 			return
