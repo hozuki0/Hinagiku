@@ -1,21 +1,28 @@
 package main
 
 import (
+	crand "crypto/rand"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"io/ioutil"
 	"log"
+	"math"
+	"math/big"
+	"math/rand"
 	"strings"
+
+	"github.com/seehuhn/mt19937"
 	// "time"
 )
 
 var (
-	stopBot                 = make(chan bool)
-	isDebug                 = true
-	isBanished              = false
-	myName                  = "Yuppi☆"
-	timerMessageChannelName = "yuppibot-debug"
-	prolabServerGuildID     = "527871282646220830"
+	stopBot                            = make(chan bool)
+	isDebug                            = true
+	isBanished                         = false
+	myName                             = "Yuppi☆"
+	timerMessageChannelName            = "yuppibot-debug"
+	prolabServerGuildID                = "527871282646220830"
+	random                  *rand.Rand = nil
 )
 
 type Mode int
@@ -28,6 +35,10 @@ const (
 )
 
 func main() {
+	seed, _ := crand.Int(crand.Reader, big.NewInt(math.MaxInt64))
+	rand := rand.New(mt19937.New())
+	rand.Seed(seed.Int64())
+
 	token, err := readTokenFile("../token.tk")
 	if err != nil {
 		fmt.Println(err)
@@ -53,7 +64,6 @@ func main() {
 	defer discord.Close()
 	var timerMessageChannel *discordgo.Channel = nil
 	for _, channel := range guild.Channels {
-		fmt.Println(channel.Name)
 		if channel.Name == timerMessageChannelName {
 			timerMessageChannel = channel
 			break
@@ -85,10 +95,15 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if canSendMsg(c.Name) && isMentionedToMe(m) {
-		if isBanishMsg(m.Content) {
+		contentWithoutMention := cutMention(m.Content)
+
+		if isBanishMsg(contentWithoutMention) {
 			sendMessage(s, c, "自害下UD")
 			isBanished = true
 			stopBot <- true
+			return
+		} else if isXXXMsg(contentWithoutMention) {
+			sendMessage(s, c, m.Author.Mention()+" "+isXXX(m.Content))
 			return
 		}
 	}
@@ -124,6 +139,10 @@ func isBanishMsg(msg string) bool {
 	return false
 }
 
+func isXXXMsg(msg string) bool {
+	return strings.HasPrefix(msg, "is") || strings.HasPrefix(msg, "Is")
+}
+
 func canSendMsg(channelName string) bool {
 	if isDebug || channelName == "yuppibot-debug" {
 		return true
@@ -146,4 +165,30 @@ func timerUpdate(d *discordgo.Session, c *discordgo.Channel) {
 
 		break
 	}
+}
+
+func diceRoll(msg string) int {
+	return 0
+}
+
+func isXXX(msg string) string {
+	if rand.Int()%2 == 0 {
+		return "return true!"
+	} else {
+		return "return false!"
+	}
+}
+
+func cutMention(msgWithMention string) string {
+	if strings.HasPrefix(msgWithMention, "<@") {
+		return strings.TrimSpace(msgWithMention[strings.Index(msgWithMention, "> ")+1:])
+	}
+	return msgWithMention
+}
+
+func cutMessage(msgWithMention string) string {
+	if strings.HasPrefix(msgWithMention, "<@") {
+		return msgWithMention[:strings.Index(msgWithMention, "> ")+1]
+	}
+	return msgWithMention
 }
