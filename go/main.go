@@ -3,13 +3,15 @@ package main
 import (
 	crand "crypto/rand"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
 	"io/ioutil"
 	"log"
 	"math"
 	"math/big"
 	"math/rand"
 	"strings"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
 
 	"github.com/seehuhn/mt19937"
 	// "time"
@@ -98,9 +100,16 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		contentWithoutMention := cutMention(m.Content)
 
 		if isBanishMsg(contentWithoutMention) {
-			sendMessage(s, c, "自害下UD")
-			isBanished = true
-			stopBot <- true
+
+			delayFunction(func() {
+				delayFunction(func() {
+					sendMessage(s, c, "自害下UD")
+					stopBot <- true
+				}, 3)
+				sendMessage(s, c, packMentionAndMessage("ｱｱｯ...", m.Author))
+				isBanished = true
+			}, 1)
+
 			return
 		} else if isXXXMsg(contentWithoutMention) {
 			sendMessage(s, c, m.Author.Mention()+" "+isXXX(m.Content))
@@ -191,4 +200,20 @@ func cutMessage(msgWithMention string) string {
 		return msgWithMention[:strings.Index(msgWithMention, "> ")+1]
 	}
 	return msgWithMention
+}
+
+func packMentionAndMessage(msg string, user *discordgo.User) string {
+	return user.Mention() + " " + msg
+}
+
+func delayFunction(f func(), delaySec time.Duration) {
+	go func() {
+		t := time.NewTicker(delaySec * time.Second)
+		for {
+			<-t.C
+			f()
+			break
+		}
+		t.Stop()
+	}()
 }
