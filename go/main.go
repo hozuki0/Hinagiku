@@ -9,12 +9,11 @@ import (
 	"math/big"
 	"math/rand"
 	"strings"
-	"time"
 
+	"github.com/Hinagiku/go/utility"
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/seehuhn/mt19937"
-	// "time"
 )
 
 var (
@@ -100,15 +99,16 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		contentWithoutMention := cutMention(m.Content)
 
 		if isBanishMsg(contentWithoutMention) {
-
-			delayFunction(func() {
-				delayFunction(func() {
-					sendMessage(s, c, "自害下UD")
-					stopBot <- true
-				}, 3)
+			dead := func() {
+				sendMessage(s, c, "自害下UD")
+				stopBot <- true
+			}
+			preDead := func() {
+				utility.DelayFunction(dead, 3)
 				sendMessage(s, c, packMentionAndMessage("ｱｱｯ...", m.Author))
 				isBanished = true
-			}, 1)
+			}
+			utility.DelayFunction(preDead, 1)
 
 			return
 		} else if isXXXMsg(contentWithoutMention) {
@@ -204,16 +204,4 @@ func cutMessage(msgWithMention string) string {
 
 func packMentionAndMessage(msg string, user *discordgo.User) string {
 	return user.Mention() + " " + msg
-}
-
-func delayFunction(f func(), delaySec time.Duration) {
-	go func() {
-		t := time.NewTicker(delaySec * time.Second)
-		for {
-			<-t.C
-			f()
-			break
-		}
-		t.Stop()
-	}()
 }
